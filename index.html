@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 Age Calculator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        input {
+            font-size: 18px;
+            padding: 12px;
+            width: 85%;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #ddd;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid #ff9800;
+        }
+
+        input.error {
+            border: 2px solid red;
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        button {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 14px 22px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            margin-top: 15px;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: #e68900;
+            box-shadow: 0px 0px 10px rgba(255, 152, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s ease-in-out;
+        }
+
+        .show {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading button {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+    </style>
+    <script>
+        async function getAge() {
+            const yearInput = document.getElementById("birthYear");
+            const resultDiv = document.getElementById("result");
+            const button = document.querySelector("button");
+            const loader = document.querySelector(".loader");
+           
+            const year = yearInput.value;
+            const currentYear = new Date().getFullYear();
+
+            // Reset result
+            resultDiv.classList.remove("show");
+
+            // Input validation
+            if (!year || isNaN(year) || year <= 0 || year > currentYear) {
+                resultDiv.innerText = "⚠️ Enter a valid birth year!";
+                resultDiv.classList.add("show");
+                yearInput.classList.add("error");
+                return;
+            }
+
+            yearInput.classList.remove("error");
+            resultDiv.innerText = "";
+
+            // Show loading animation
+            button.classList.add("loading");
+            loader.style.display = "inline-block";
+
+            try {
+                const response = await fetch(`http://192.168.100.6:5002/age?year=${year}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch age");
+                }
+
+                const data = await response.json();
+                resultDiv.innerText = `🎂 You are ${data.age} years old!`;
+                resultDiv.classList.add("show");
+            } catch (error) {
+                resultDiv.innerText = "⚠️ Oops! Unable to calculate age. Try again.";
+                resultDiv.classList.add("show");
+            } finally {
+                button.classList.remove("loading");
+                loader.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📅 Age Calculator</h1>
+        <p>Enter your birth year:</p>
+        <input type="number" id="birthYear" placeholder="Enter year (e.g. 1995)">
+        <br>
+        <button onclick="getAge()">Calculate Age <span class="loader"></span></button>
+        <p id="result">🔢 Your age will appear here.</p>
+    </div>
+
+</body>
+</html>
